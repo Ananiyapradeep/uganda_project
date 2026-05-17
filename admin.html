@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WildEye Admin — Uganda Wildlife Sanctuary</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink:        #0e1a14;
+  --bone:       #f5efe2;
+  --paper:      #fbf7ec;
+  --moss:       #1f3a2e;
+  --moss-2:     #27513f;
+  --leaf:       #3f7a5e;
+  --leaf-faint: rgba(63,122,94,.12);
+  --gold:       #c89b3c;
+  --amber:      #e6a85a;
+  --terra:      #b65a3a;
+  --red:        #c0392b;
+  --red-faint:  rgba(192,57,43,.1);
+  --blue:       #2980b9;
+  --blue-faint: rgba(41,128,185,.1);
+  --sidebar-w: 260px;
+  --topbar-h:  64px;
+  --hairline:  1px solid rgba(14,26,20,.1);
+  --shadow-sm: 0 2px 8px rgba(14,26,20,.06);
+  --shadow-md: 0 8px 30px rgba(14,26,20,.1);
+  --shadow-lg: 0 20px 60px rgba(14,26,20,.15);
+  --serif:     "Cormorant Garamond", Georgia, serif;
+  --sans:      "Manrope", -apple-system, sans-serif;
+  --radius:    8px;
+  --transition: all .2s ease;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--sans);
+  background: #f0ede6;
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ════════════════════════════════════════
+   LOGIN SCREEN
+════════════════════════════════════════ */
+#loginScreen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--moss);
+  display: flex; align-items: center; justify-content: center;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(63,122,94,.3) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(200,155,60,.15) 0%, transparent 50%);
+}
+#loginScreen.hidden { display: none; }
+.login-card {
+  background: var(--paper);
+  border-radius: 16px;
+  padding: 3rem 3.5rem;
+  width: 100%; max-width: 420px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+.login-brand {
+  display: flex; align-items: center; justify-content: center; gap: .75rem;
+  margin-bottom: 2rem;
+}
+.login-brand-mark {
+  width: 52px; height: 52px;
+  background: var(--moss);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 1.4rem;
+}
+.login-brand h1 {
+  font-family: var(--serif);
+  font-size: 1.5rem; font-weight: 600;
+  color: var(--moss);
+}
+.login-brand h1 span { display: block; font-size: .7rem; font-family: var(--sans); letter-spacing: .3em; text-transform: uppercase; color: rgba(14,26,20,.5); font-weight: 500; }
+.login-subtitle {
+  font-size: .85rem; color: rgba(14,26,20,.55);
+  margin-bottom: 2rem; line-height: 1.6;
+}
+.login-input-group { margin-bottom: 1.2rem; text-align: left; }
+.login-input-group label {
+  display: block; font-size: .72rem; font-weight: 600;
+  letter-spacing: .15em; text-transform: uppercase;
+  color: rgba(14,26,20,.6); margin-bottom: .5rem;
+}
+.login-input-group input {
+  width: 100%; padding: .85rem 1rem;
+  border: 1.5px solid rgba(14,26,20,.15); border-radius: 6px;
+  font-family: var(--sans); font-size: .9rem; color: var(--ink);
+  background: #fff; transition: var(--transition);
+}
+.login-input-group input:focus {
+  outline: none; border-color: var(--leaf);
+  box-shadow: 0 0 0 3px rgba(63,122,94,.12);
+}
+.login-btn {
+  width: 100%; padding: .95rem;
+  background: var(--moss); color: var(--bone);
+  border: none; border-radius: 6px;
+  font-family: var(--sans); font-weight: 700;
+  font-size: .85rem; letter-spacing: .1em; text-transform: uppercase;
+  cursor: pointer; transition: var(--transition);
+  margin-top: .5rem;
+}
+.login-btn:hover { background: var(--moss-2); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.login-error {
+  margin-top: 1rem; padding: .75rem 1rem;
+  background: var(--red-faint); border: 1px solid rgba(192,57,43,.2);
+  border-radius: 6px; color: var(--red);
+  font-size: .82rem; display: none;
+}
+
+/* ════════════════════════════════════════
+   LAYOUT
+════════════════════════════════════════ */
+#app { display: flex; min-height: 100vh; }
+
+/* ════════════════════════════════════════
+   SIDEBAR
+════════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--moss);
+  min-height: 100vh;
+  position: fixed; left: 0; top: 0; bottom: 0;
+  display: flex; flex-direction: column;
+  z-index: 100;
+  transition: transform .3s ease;
+}
+.sidebar-brand {
+  padding: 1.6rem 1.5rem 1.4rem;
+  border-bottom: 1px solid rgba(245,239,226,.1);
+  display: flex; align-items: center; gap: .85rem;
+}
+.sidebar-brand-icon {
+  width: 40px; height: 40px;
+  background: rgba(200,155,60,.2);
+  border: 1px solid rgba(200,155,60,.4);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 1.1rem; flex-shrink: 0;
+}
+.sidebar-brand-text strong {
+  display: block; font-family: var(--serif);
+  font-size: 1rem; font-weight: 600; color: var(--bone);
+  line-height: 1.1;
+}
+.sidebar-brand-text span {
+  font-size: .62rem; letter-spacing: .25em; text-transform: uppercase;
+  color: rgba(200,155,60,.7); font-weight: 500;
+}
+
+.sidebar-nav { flex: 1; padding: 1.5rem 0; overflow-y: auto; }
+.nav-section { margin-bottom: 1.5rem; }
+.nav-section-label {
+  padding: 0 1.5rem .6rem;
+  font-size: .6rem; letter-spacing: .3em; text-transform: uppercase;
+  color: rgba(245,239,226,.3); font-weight: 600;
+}
+.nav-item {
+  display: flex; align-items: center; gap: .8rem;
+  padding: .72rem 1.5rem;
+  color: rgba(245,239,226,.65);
+  cursor: pointer; transition: var(--transition);
+  font-size: .82rem; font-weight: 500;
+  position: relative;
+}
+.nav-item:hover { background: rgba(245,239,226,.06); color: var(--bone); }
+.nav-item.active {
+  background: rgba(200,155,60,.15);
+  color: var(--gold);
+  border-right: 2px solid var(--gold);
+}
+.nav-item .nav-icon { width: 18px; text-align: center; font-size: .95rem; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto; background: var(--gold); color: var(--ink);
+  font-size: .6rem; font-weight: 700; padding: .15rem .45rem;
+  border-radius: 20px; min-width: 18px; text-align: center;
+}
+
+.sidebar-footer {
+  padding: 1.2rem 1.5rem;
+  border-top: 1px solid rgba(245,239,226,.1);
+}
+.sidebar-user {
+  display: flex; align-items: center; gap: .75rem;
+  margin-bottom: 1rem;
+}
+.sidebar-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(200,155,60,.25);
+  display: grid; place-items: center;
+  font-size: .85rem; color: var(--gold); font-weight: 700;
+}
+.sidebar-user-info strong { display: block; font-size: .82rem; color: var(--bone); font-weight: 600; }
+.sidebar-user-info span { font-size: .68rem; color: rgba(245,239,226,.4); }
+.logout-btn {
+  width: 100%; padding: .6rem;
+  background: rgba(192,57,43,.15); color: rgba(245,239,226,.7);
+  border: 1px solid rgba(192,57,43,.2); border-radius: 6px;
+  font-family: var(--sans); font-size: .72rem; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase;
+  cursor: pointer; transition: var(--transition);
+}
+.logout-btn:hover { background: rgba(192,57,43,.25); color: var(--bone); }
+
+/* ════════════════════════════════════════
+   MAIN CONTENT
+════════════════════════════════════════ */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex; flex-direction: column;
+  min-height: 100vh;
+}
+
+.topbar {
+  height: var(--topbar-h);
+  background: var(--paper);
+  border-bottom: var(--hairline);
+  padding: 0 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+  box-shadow: var(--shadow-sm);
+}
+.topbar-left h2 {
+  font-family: var(--serif); font-size: 1.3rem; font-weight: 600; color: var(--moss);
+}
+.topbar-left p { font-size: .75rem; color: rgba(14,26,20,.45); font-weight: 400; margin-top: 1px; }
+.topbar-right { display: flex; align-items: center; gap: 1rem; }
+.topbar-time {
+  font-size: .75rem; color: rgba(14,26,20,.5);
+  background: rgba(14,26,20,.05); padding: .4rem .8rem;
+  border-radius: 6px; font-weight: 500;
+}
+.refresh-btn {
+  width: 36px; height: 36px;
+  background: var(--leaf-faint); border: 1px solid rgba(63,122,94,.2);
+  border-radius: 8px; cursor: pointer;
+  display: grid; place-items: center; color: var(--leaf);
+  font-size: 1rem; transition: var(--transition);
+}
+.refresh-btn:hover { background: var(--leaf); color: white; }
+.refresh-btn.spinning { animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.content { padding: 2rem; flex: 1; }
+
+/* ════════════════════════════════════════
+   SECTIONS / PAGES
+════════════════════════════════════════ */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ════════════════════════════════════════
+   STAT CARDS
+════════════════════════════════════════ */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1.2rem; margin-bottom: 2rem;
+}
+.stat-card {
+  background: var(--paper);
+  border: var(--hairline); border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  position: relative; overflow: hidden;
+  transition: var(--transition);
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.stat-card::before {
+  content: ""; position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+}
+.stat-card.green::before { background: linear-gradient(90deg, var(--leaf), var(--moss)); }
+.stat-card.gold::before { background: linear-gradient(90deg, var(--gold), var(--amber)); }
+.stat-card.red::before { background: linear-gradient(90deg, var(--red), #e74c3c); }
+.stat-card.blue::before { background: linear-gradient(90deg, var(--blue), #3498db); }
+.stat-card-icon {
+  width: 42px; height: 42px; border-radius: 10px;
+  display: grid; place-items: center; font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+.stat-card.green .stat-card-icon { background: var(--leaf-faint); }
+.stat-card.gold .stat-card-icon { background: rgba(200,155,60,.1); }
+.stat-card.red .stat-card-icon { background: var(--red-faint); }
+.stat-card.blue .stat-card-icon { background: var(--blue-faint); }
+.stat-card-value {
+  font-family: var(--serif); font-size: 2.2rem; font-weight: 600;
+  line-height: 1; color: var(--ink); margin-bottom: .4rem;
+}
+.stat-card-label {
+  font-size: .72rem; font-weight: 600; letter-spacing: .15em;
+  text-transform: uppercase; color: rgba(14,26,20,.45);
+}
+.stat-card-sub {
+  font-size: .75rem; color: rgba(14,26,20,.4); margin-top: .4rem;
+}
+
+/* ════════════════════════════════════════
+   CHARTS ROW
+════════════════════════════════════════ */
+.charts-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1.2rem; margin-bottom: 2rem;
+}
+.chart-card {
+  background: var(--paper);
+  border: var(--hairline); border-radius: var(--radius);
+  padding: 1.5rem; box-shadow: var(--shadow-sm);
+}
+.chart-card-title {
+  font-family: var(--serif); font-size: 1.1rem; font-weight: 600;
+  color: var(--moss); margin-bottom: 1.2rem;
+}
+.chart-wrap { height: 200px; position: relative; }
+
+/* SVG bar chart */
+.bar-chart-svg { width: 100%; height: 100%; }
+
+/* Park distribution pills */
+.park-list { display: flex; flex-direction: column; gap: .7rem; max-height: 200px; overflow-y: auto; }
+.park-row { display: flex; align-items: center; gap: .8rem; }
+.park-row-name { font-size: .78rem; font-weight: 600; min-width: 130px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.park-bar-track { flex: 1; height: 6px; background: rgba(14,26,20,.08); border-radius: 4px; overflow: hidden; }
+.park-bar-fill { height: 100%; background: linear-gradient(90deg, var(--leaf), var(--moss)); border-radius: 4px; transition: width .6s ease; }
+.park-row-count { font-size: .72rem; color: rgba(14,26,20,.5); font-weight: 600; min-width: 24px; text-align: right; }
+
+/* ════════════════════════════════════════
+   DATA TABLE
+════════════════════════════════════════ */
+.table-card {
+  background: var(--paper);
+  border: var(--hairline); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.table-header {
+  padding: 1.2rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: var(--hairline);
+  background: rgba(14,26,20,.02);
+}
+.table-title { font-family: var(--serif); font-size: 1.1rem; font-weight: 600; color: var(--moss); }
+.table-controls { display: flex; gap: .8rem; align-items: center; }
+.tbl-search {
+  padding: .55rem .9rem .55rem 2.1rem;
+  border: 1.5px solid rgba(14,26,20,.12); border-radius: 6px;
+  font-family: var(--sans); font-size: .82rem; color: var(--ink);
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230e1a1480' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") no-repeat .7rem center;
+  transition: var(--transition); width: 200px;
+}
+.tbl-search:focus { outline: none; border-color: var(--leaf); box-shadow: 0 0 0 3px var(--leaf-faint); }
+.tbl-select {
+  padding: .55rem .9rem;
+  border: 1.5px solid rgba(14,26,20,.12); border-radius: 6px;
+  font-family: var(--sans); font-size: .82rem; color: var(--ink);
+  background: #fff; cursor: pointer; transition: var(--transition);
+}
+.tbl-select:focus { outline: none; border-color: var(--leaf); }
+.export-btn {
+  padding: .55rem 1rem;
+  background: var(--moss); color: var(--bone);
+  border: none; border-radius: 6px;
+  font-family: var(--sans); font-size: .78rem; font-weight: 600;
+  cursor: pointer; transition: var(--transition);
+  display: flex; align-items: center; gap: .4rem;
+}
+.export-btn:hover { background: var(--moss-2); }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  padding: .9rem 1.2rem;
+  text-align: left; font-size: .68rem;
+  font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: rgba(14,26,20,.45);
+  border-bottom: var(--hairline);
+  white-space: nowrap;
+  background: rgba(14,26,20,.02);
+  cursor: pointer; user-select: none;
+}
+thead th:hover { color: var(--moss); }
+thead th .sort-indicator { opacity: .3; margin-left: 4px; }
+thead th.sorted .sort-indicator { opacity: 1; color: var(--gold); }
+tbody tr {
+  border-bottom: var(--hairline);
+  transition: background .15s;
+  cursor: pointer;
+}
+tbody tr:hover { background: rgba(63,122,94,.04); }
+tbody tr:last-child { border-bottom: none; }
+td {
+  padding: .85rem 1.2rem;
+  font-size: .82rem; color: var(--ink);
+  vertical-align: middle;
+}
+td.muted { color: rgba(14,26,20,.45); font-size: .76rem; }
+
+/* badges */
+.badge {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .25rem .65rem; border-radius: 20px;
+  font-size: .65rem; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; white-space: nowrap;
+}
+.badge::before { content: ""; width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.badge-confirmed { background: rgba(63,122,94,.12); color: var(--leaf); }
+.badge-confirmed::before { background: var(--leaf); }
+.badge-cancelled { background: var(--red-faint); color: var(--red); }
+.badge-cancelled::before { background: var(--red); }
+.badge-pending { background: rgba(200,155,60,.12); color: #96700f; }
+.badge-pending::before { background: var(--gold); }
+.badge-paid { background: rgba(41,128,185,.1); color: var(--blue); }
+.badge-paid::before { background: var(--blue); }
+
+/* pagination */
+.table-footer {
+  padding: 1rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  border-top: var(--hairline);
+  font-size: .78rem; color: rgba(14,26,20,.5);
+}
+.pagination { display: flex; gap: .4rem; }
+.pg-btn {
+  width: 30px; height: 30px; border-radius: 6px;
+  border: var(--hairline); background: #fff;
+  cursor: pointer; font-size: .78rem;
+  transition: var(--transition); font-family: var(--sans);
+  display: grid; place-items: center; color: var(--ink);
+}
+.pg-btn:hover { border-color: var(--leaf); color: var(--leaf); }
+.pg-btn.active { background: var(--moss); color: var(--bone); border-color: var(--moss); }
+.pg-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ════════════════════════════════════════
+   MODAL / DRAWER
+════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(14,26,20,.5); backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center;
+  padding: 1.5rem;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--paper);
+  border-radius: 12px; width: 100%; max-width: 680px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn .25s ease;
+}
+@keyframes modalIn { from { opacity: 0; transform: translateY(20px) scale(.97); } }
+.modal-head {
+  padding: 1.5rem 1.8rem;
+  border-bottom: var(--hairline);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; background: var(--paper); z-index: 1;
+}
+.modal-head h3 { font-family: var(--serif); font-size: 1.3rem; color: var(--moss); }
+.modal-close {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(14,26,20,.06); border: none;
+  cursor: pointer; font-size: 1.1rem; color: rgba(14,26,20,.5);
+  transition: var(--transition); display: grid; place-items: center;
+}
+.modal-close:hover { background: var(--red-faint); color: var(--red); }
+.modal-body { padding: 1.8rem; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.detail-item label {
+  display: block; font-size: .68rem; font-weight: 700;
+  letter-spacing: .15em; text-transform: uppercase;
+  color: rgba(14,26,20,.4); margin-bottom: .3rem;
+}
+.detail-item p { font-size: .9rem; color: var(--ink); font-weight: 500; }
+.detail-divider { grid-column: 1/-1; height: 1px; background: rgba(14,26,20,.08); }
+.detail-section-title {
+  grid-column: 1/-1;
+  font-family: var(--serif); font-size: 1rem; color: var(--moss);
+  padding-bottom: .3rem; border-bottom: var(--hairline);
+}
+.passenger-list { grid-column: 1/-1; display: flex; flex-direction: column; gap: .6rem; }
+.passenger-pill {
+  display: flex; align-items: center; gap: .8rem;
+  padding: .75rem 1rem; background: rgba(14,26,20,.03);
+  border: var(--hairline); border-radius: 8px;
+  font-size: .82rem;
+}
+.passenger-pill strong { color: var(--ink); }
+.passenger-pill span { color: rgba(14,26,20,.5); }
+.modal-actions {
+  padding: 1.2rem 1.8rem;
+  border-top: var(--hairline);
+  display: flex; gap: .8rem; justify-content: flex-end;
+}
+.btn-cancel-booking {
+  padding: .7rem 1.4rem;
+  background: var(--red-faint); color: var(--red);
+  border: 1px solid rgba(192,57,43,.2); border-radius: 6px;
+  font-family: var(--sans); font-weight: 600;
+  font-size: .8rem; cursor: pointer; transition: var(--transition);
+}
+.btn-cancel-booking:hover { background: var(--red); color: #fff; }
+.btn-close-modal {
+  padding: .7rem 1.4rem;
+  background: var(--moss); color: var(--bone);
+  border: none; border-radius: 6px;
+  font-family: var(--sans); font-weight: 600;
+  font-size: .8rem; cursor: pointer; transition: var(--transition);
+}
+.btn-close-modal:hover { background: var(--moss-2); }
+
+/* ════════════════════════════════════════
+   LOADING / EMPTY STATES
+════════════════════════════════════════ */
+.loading-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 4rem;
+  color: rgba(14,26,20,.4); gap: 1rem;
+}
+.spinner {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 3px solid rgba(63,122,94,.2);
+  border-top-color: var(--leaf);
+  animation: spin .7s linear infinite;
+}
+.empty-state {
+  text-align: center; padding: 4rem;
+  color: rgba(14,26,20,.4);
+}
+.empty-state svg { margin-bottom: 1rem; opacity: .3; }
+.empty-state p { font-family: var(--serif); font-size: 1.1rem; font-style: italic; }
+
+/* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+.toast {
+  position: fixed; bottom: 2rem; right: 2rem;
+  background: var(--moss); color: var(--bone);
+  padding: 1rem 1.4rem; border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  font-size: .85rem; font-weight: 500;
+  z-index: 9000; max-width: 320px;
+  transform: translateY(100px); opacity: 0;
+  transition: all .3s ease;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.error { background: var(--red); }
+.toast.success { background: var(--leaf); }
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .charts-row { grid-template-columns: 1fr; }
+  .hamburger { display: flex !important; }
+}
+@media (max-width: 600px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .detail-grid { grid-template-columns: 1fr; }
+}
+
+.hamburger {
+  display: none; width: 36px; height: 36px;
+  background: none; border: none; cursor: pointer;
+  flex-direction: column; gap: 5px; align-items: center; justify-content: center;
+}
+.hamburger span {
+  display: block; width: 20px; height: 2px;
+  background: var(--ink); border-radius: 2px; transition: var(--transition);
+}
+.overlay-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(14,26,20,.4); z-index: 99;
+}
+.overlay-bg.show { display: block; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(14,26,20,.15); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(14,26,20,.3); }
+
+/* ════════════════════════════════════════
+   MINI LINE CHART
+════════════════════════════════════════ */
+.line-chart-svg { overflow: visible; }
+.chart-tooltip {
+  position: absolute; background: var(--moss); color: var(--bone);
+  font-size: .72rem; padding: .4rem .7rem; border-radius: 6px;
+  pointer-events: none; white-space: nowrap;
+  opacity: 0; transition: opacity .15s;
+  z-index: 10;
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-mark">🦁</div>
+      <h1>WildEye Admin
+        <span>Uganda Wildlife Sanctuary</span>
+      </h1>
+    </div>
+    <p class="login-subtitle">Secure administration portal. Enter the admin password to continue.</p>
+    <div class="login-input-group">
+      <label>Admin Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()" autofocus />
+    </div>
+    <p style="font-size:.72rem;color:rgba(14,26,20,.4);margin-bottom:1.2rem;text-align:left;line-height:1.6;">
+      Default password: <code style="background:rgba(14,26,20,.07);padding:.15rem .4rem;border-radius:4px;font-size:.78rem;color:var(--moss);font-weight:600;">uws-admin-2024</code><br>
+      Override via <code style="background:rgba(14,26,20,.07);padding:.15rem .4rem;border-radius:4px;font-size:.78rem;">ADMIN_SECRET</code> in your <code style="background:rgba(14,26,20,.07);padding:.15rem .4rem;border-radius:4px;font-size:.78rem;">.env</code> file.
+    </p>
+    <button class="login-btn" onclick="doLogin()">Sign In to Dashboard</button>
+    <div class="login-error" id="loginError">Invalid credentials. Please try again.</div>
+  </div>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="app" style="display:none;">
+
+  <div class="overlay-bg" id="overlayBg" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">🦁</div>
+      <div class="sidebar-brand-text">
+        <strong>WildEye</strong>
+        <span>Admin Portal</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Overview</div>
+        <div class="nav-item active" onclick="showPage('dashboard', this)">
+          <span class="nav-icon">📊</span> Dashboard
+        </div>
+        <div class="nav-item" onclick="showPage('bookings', this)">
+          <span class="nav-icon">🎫</span> All Bookings
+          <span class="nav-badge" id="totalBadge">—</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Management</div>
+        <div class="nav-item" onclick="showPage('confirmed', this)">
+          <span class="nav-icon">✅</span> Confirmed
+          <span class="nav-badge" id="confirmedBadge" style="background:var(--leaf);color:#fff;">—</span>
+        </div>
+        <div class="nav-item" onclick="showPage('cancelled', this)">
+          <span class="nav-icon">❌</span> Cancelled
+          <span class="nav-badge" id="cancelledBadge" style="background:var(--red);color:#fff;">—</span>
+        </div>
+        <div class="nav-item" onclick="showPage('revenue', this)">
+          <span class="nav-icon">💰</span> Revenue
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">System</div>
+        <div class="nav-item" onclick="window.open('/docs','_blank')">
+          <span class="nav-icon">📖</span> API Docs
+        </div>
+        <div class="nav-item" onclick="window.open('/health','_blank')">
+          <span class="nav-icon">💚</span> Health Check
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">A</div>
+        <div class="sidebar-user-info">
+          <strong>Administrator</strong>
+          <span>WildEye Admin</span>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">⏏ Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="topbar-left">
+          <h2 id="pageTitle">Dashboard</h2>
+          <p id="pageSubtitle">Uganda Wildlife Sanctuary overview</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-time" id="topbarTime"></span>
+        <button class="refresh-btn" id="refreshBtn" title="Refresh data" onclick="refreshAll()">↻</button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ══ DASHBOARD PAGE ══ -->
+      <div id="page-dashboard" class="page active">
+        <!-- Stat cards -->
+        <div class="stats-grid" id="statsGrid">
+          <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div><span>Loading stats…</span></div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="chart-card-title">Bookings Last 14 Days</div>
+            <div class="chart-wrap" id="dailyChartWrap">
+              <div class="loading-state"><div class="spinner"></div></div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-title">Bookings by Park</div>
+            <div class="park-list" id="parkList">
+              <div class="loading-state"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent bookings -->
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-title">Recent Bookings</span>
+            <button class="export-btn" onclick="showPage('bookings', document.querySelector('.nav-item:nth-child(2)'))">View All →</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Park</th>
+                  <th>Guest</th>
+                  <th>Visit Date</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Payment</th>
+                </tr>
+              </thead>
+              <tbody id="recentTbody">
+                <tr><td colspan="7"><div class="loading-state"><div class="spinner"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ BOOKINGS PAGE (all / confirmed / cancelled) ══ -->
+      <div id="page-bookings" class="page">
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-title" id="bookingsTableTitle">All Bookings</span>
+            <div class="table-controls">
+              <input type="text" class="tbl-search" id="bookingSearch" placeholder="Search name, ID, park…" oninput="filterBookingsTable()">
+              <select class="tbl-select" id="statusFilter" onchange="filterBookingsTable()">
+                <option value="">All Statuses</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+              <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th onclick="sortTable('booking_id')">Booking ID <span class="sort-indicator">↕</span></th>
+                  <th onclick="sortTable('park_name')">Park <span class="sort-indicator">↕</span></th>
+                  <th onclick="sortTable('full_name')">Guest <span class="sort-indicator">↕</span></th>
+                  <th>Contact</th>
+                  <th onclick="sortTable('visit_date')">Visit Date <span class="sort-indicator">↕</span></th>
+                  <th onclick="sortTable('total_amount_usd')">Amount <span class="sort-indicator">↕</span></th>
+                  <th>Pax</th>
+                  <th onclick="sortTable('status')">Status <span class="sort-indicator">↕</span></th>
+                  <th onclick="sortTable('payment_status')">Payment <span class="sort-indicator">↕</span></th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bookingsTbody">
+                <tr><td colspan="10"><div class="loading-state"><div class="spinner"></div><span>Loading bookings…</span></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-footer">
+            <span id="bookingsCount">—</span>
+            <div class="pagination" id="pagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ CONFIRMED PAGE ══ -->
+      <div id="page-confirmed" class="page">
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-title">Confirmed Bookings</span>
+            <div class="table-controls">
+              <input type="text" class="tbl-search" id="confirmedSearch" placeholder="Search…" oninput="filterConfirmedTable()">
+              <button class="export-btn" onclick="exportCSV('confirmed')">⬇ Export CSV</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Booking ID</th><th>Park</th><th>Guest</th><th>Visit Date</th><th>Amount</th><th>Payment</th><th>Created</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="confirmedTbody">
+                <tr><td colspan="8"><div class="loading-state"><div class="spinner"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ CANCELLED PAGE ══ -->
+      <div id="page-cancelled" class="page">
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-title">Cancelled Bookings</span>
+            <div class="table-controls">
+              <input type="text" class="tbl-search" id="cancelledSearch" placeholder="Search…" oninput="filterCancelledTable()">
+              <button class="export-btn" onclick="exportCSV('cancelled')">⬇ Export CSV</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Booking ID</th><th>Park</th><th>Guest</th><th>Visit Date</th><th>Amount</th><th>Reason</th><th>Cancelled At</th>
+                </tr>
+              </thead>
+              <tbody id="cancelledTbody">
+                <tr><td colspan="7"><div class="loading-state"><div class="spinner"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ REVENUE PAGE ══ -->
+      <div id="page-revenue" class="page">
+        <div class="stats-grid" id="revenueStats" style="grid-template-columns:repeat(3,1fr);">
+          <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>
+        </div>
+        <div class="charts-row" style="grid-template-columns:1fr;">
+          <div class="chart-card">
+            <div class="chart-card-title">Daily Revenue (Last 14 Days)</div>
+            <div class="chart-wrap" id="revenueChartWrap">
+              <div class="loading-state"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-title">Revenue by Park</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Park</th><th>Bookings</th><th>Revenue (USD)</th><th>Avg per Booking</th></tr>
+              </thead>
+              <tbody id="revenueParkTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+
+</div><!-- /app -->
+
+<!-- ══ BOOKING DETAIL MODAL ══ -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Booking Detail</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid" id="modalContent">
+        <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel-booking" id="modalCancelBtn" onclick="cancelBookingFromModal()">Cancel Booking</button>
+      <button class="btn-close-modal" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// CONFIG & STATE
+// ═══════════════════════════════════════════════════
+let API_BASE = '';
+let ADMIN_TOKEN = '';
+let allBookings = [];
+let statsData = null;
+let currentPage = 1;
+let perPage = 20;
+let sortKey = 'createdAt';
+let sortDir = -1;
+let currentModalBookingId = null;
+
+// ═══════════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════════
+function updateClock() {
+  const el = document.getElementById('topbarTime');
+  if (el) el.textContent = new Date().toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════════
+
+// Backend URL is permanent — same origin (served by server.js)
+API_BASE = window.location.origin;
+
+window.addEventListener('load', () => {
+  // Auto-login if token saved
+  const saved = localStorage.getItem('uws_admin_token');
+  if (saved) {
+    ADMIN_TOKEN = saved;
+    bootApp();
+  }
+});
+
+async function doLogin() {
+  const pw = document.getElementById('loginPassword').value.trim();
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+
+  if (!pw) { errEl.textContent = 'Please enter the admin password.'; errEl.style.display = 'block'; return; }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/admin/stats`, {
+      headers: { 'x-admin-token': pw }
+    });
+    if (!res.ok) { errEl.textContent = 'Incorrect password. Please try again.'; errEl.style.display = 'block'; return; }
+    ADMIN_TOKEN = pw;
+    localStorage.setItem('uws_admin_token', pw);
+    bootApp();
+  } catch(e) {
+    errEl.textContent = 'Cannot reach server: ' + e.message;
+    errEl.style.display = 'block';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('uws_admin_token');
+  ADMIN_TOKEN = '';
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('app').style.display = 'none';
+}
+
+function bootApp() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('app').style.display = 'flex';
+  refreshAll();
+}
+
+// ═══════════════════════════════════════════════════
+// API
+// ═══════════════════════════════════════════════════
+async function apiFetch(path) {
+  const res = await fetch(API_BASE + path, { headers: { 'x-admin-token': ADMIN_TOKEN } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+async function apiDelete(path, body = {}) {
+  const res = await fetch(API_BASE + path, {
+    method: 'DELETE', headers: { 'x-admin-token': ADMIN_TOKEN, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+// ═══════════════════════════════════════════════════
+// REFRESH
+// ═══════════════════════════════════════════════════
+async function refreshAll() {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  try {
+    await Promise.all([loadStats(), loadBookings()]);
+  } catch(e) { showToast('Error loading data: ' + e.message, 'error'); }
+  btn.classList.remove('spinning');
+}
+
+async function loadStats() {
+  try {
+    statsData = await apiFetch('/api/v1/admin/stats');
+    renderStats(statsData);
+    renderDailyChart(statsData.daily || []);
+    renderParkList(statsData.parks || []);
+    renderRecentBookings(statsData.recent_bookings || []);
+    renderRevenueStats(statsData);
+    renderRevenueParkTable(statsData.parks || []);
+    renderRevenueChart(statsData.daily || []);
+    // Update badges
+    document.getElementById('totalBadge').textContent = statsData.overview?.total_bookings || 0;
+    document.getElementById('confirmedBadge').textContent = statsData.overview?.confirmed || 0;
+    document.getElementById('cancelledBadge').textContent = statsData.overview?.cancelled || 0;
+  } catch(e) { console.error('loadStats', e); }
+}
+
+async function loadBookings() {
+  try {
+    const data = await apiFetch('/api/v1/admin/bookings?limit=500');
+    allBookings = data.bookings || [];
+    renderBookingsTable(allBookings);
+    renderConfirmedTable(allBookings.filter(b => b.status === 'confirmed'));
+    renderCancelledTable(allBookings.filter(b => b.status === 'cancelled'));
+  } catch(e) { console.error('loadBookings', e); }
+}
+
+// ═══════════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════════
+const pageTitles = {
+  dashboard: ['Dashboard', 'Uganda Wildlife Sanctuary overview'],
+  bookings:  ['All Bookings', 'Complete booking records'],
+  confirmed: ['Confirmed Bookings', 'Active confirmed visits'],
+  cancelled: ['Cancelled Bookings', 'Cancelled booking records'],
+  revenue:   ['Revenue Analytics', 'Financial overview & park performance'],
+};
+
+function showPage(name, navEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (navEl) navEl.classList.add('active');
+  const [title, sub] = pageTitles[name] || [name, ''];
+  document.getElementById('pageTitle').textContent = title;
+  document.getElementById('pageSubtitle').textContent = sub;
+  closeSidebar();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlayBg').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlayBg').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════
+// STAT CARDS
+// ═══════════════════════════════════════════════════
+function renderStats(d) {
+  const o = d.overview || {};
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card green">
+      <div class="stat-card-icon">🎫</div>
+      <div class="stat-card-value">${o.total_bookings || 0}</div>
+      <div class="stat-card-label">Total Bookings</div>
+      <div class="stat-card-sub">${o.confirmed || 0} confirmed · ${o.cancelled || 0} cancelled</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-card-icon">💵</div>
+      <div class="stat-card-value">$${fmtNum(o.total_revenue_usd || 0)}</div>
+      <div class="stat-card-label">Total Revenue</div>
+      <div class="stat-card-sub">From ${o.paid || 0} paid bookings</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-card-icon">✅</div>
+      <div class="stat-card-value">${o.confirmed || 0}</div>
+      <div class="stat-card-label">Confirmed</div>
+      <div class="stat-card-sub">${o.total_bookings ? Math.round(o.confirmed/o.total_bookings*100) : 0}% confirmation rate</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-card-icon">👥</div>
+      <div class="stat-card-value">${o.total_users || 0}</div>
+      <div class="stat-card-label">Registered Users</div>
+      <div class="stat-card-sub">In-session users</div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+// DAILY CHART (SVG bars)
+// ═══════════════════════════════════════════════════
+function renderDailyChart(daily) {
+  const wrap = document.getElementById('dailyChartWrap');
+  const last14 = daily.slice(-14);
+  if (!last14.length) { wrap.innerHTML = '<div class="empty-state"><p>No data yet</p></div>'; return; }
+
+  const maxB = Math.max(...last14.map(d => d.bookings), 1);
+  const W = 420, H = 160, pad = 30, barW = (W - pad*2) / last14.length - 4;
+
+  const bars = last14.map((d, i) => {
+    const bh = Math.max(4, (d.bookings / maxB) * (H - 30));
+    const x = pad + i * ((W - pad*2) / last14.length) + 2;
+    const y = H - 20 - bh;
+    const label = d.date ? d.date.slice(5) : '';
+    return `
+      <rect x="${x}" y="${y}" width="${barW}" height="${bh}"
+        fill="url(#barGrad)" rx="3" class="bar-rect"
+        data-tip="${d.date}: ${d.bookings} bookings" />
+      ${i % 2 === 0 ? `<text x="${x + barW/2}" y="${H-4}" text-anchor="middle" font-size="9" fill="rgba(14,26,20,.4)">${label}</text>` : ''}
+    `;
+  }).join('');
+
+  wrap.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" class="bar-chart-svg">
+      <defs>
+        <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#3f7a5e"/>
+          <stop offset="100%" stop-color="#1f3a2e" stop-opacity=".6"/>
+        </linearGradient>
+      </defs>
+      ${bars}
+    </svg>
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+// PARK LIST
+// ═══════════════════════════════════════════════════
+function renderParkList(parks) {
+  const el = document.getElementById('parkList');
+  if (!parks.length) { el.innerHTML = '<div class="empty-state"><p>No park data</p></div>'; return; }
+  const max = Math.max(...parks.map(p => p.count), 1);
+  el.innerHTML = parks.slice(0, 8).map(p => `
+    <div class="park-row">
+      <span class="park-row-name" title="${p.name}">${p.name}</span>
+      <div class="park-bar-track"><div class="park-bar-fill" style="width:${Math.round(p.count/max*100)}%"></div></div>
+      <span class="park-row-count">${p.count}</span>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// RECENT BOOKINGS TABLE (dashboard)
+// ═══════════════════════════════════════════════════
+function renderRecentBookings(bookings) {
+  const tb = document.getElementById('recentTbody');
+  if (!bookings.length) { tb.innerHTML = '<tr><td colspan="7"><div class="empty-state"><p>No recent bookings</p></div></td></tr>'; return; }
+  tb.innerHTML = bookings.map(b => `
+    <tr onclick="openModal('${b.booking_id}')">
+      <td><code style="font-size:.78rem;font-family:monospace;color:var(--moss)">${b.booking_id}</code></td>
+      <td>${b.park_name || '—'}</td>
+      <td>${b.holder_name || b.full_name || '—'}</td>
+      <td class="muted">${fmtDate(b.visit_date)}</td>
+      <td><strong>$${fmtNum(b.total_usd || b.total_amount_usd || 0)}</strong></td>
+      <td>${statusBadge(b.status)}</td>
+      <td>${payBadge(b.payment_status)}</td>
+    </tr>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// BOOKINGS TABLE (full)
+// ═══════════════════════════════════════════════════
+function renderBookingsTable(bookings) {
+  const search = (document.getElementById('bookingSearch')?.value || '').toLowerCase();
+  const statusF = document.getElementById('statusFilter')?.value || '';
+  let filtered = bookings.filter(b => {
+    const q = search ? [b.booking_id, b.park_name, b.full_name, b.email, b.phone_number].filter(Boolean).join(' ').toLowerCase().includes(search) : true;
+    const s = statusF ? b.status === statusF : true;
+    return q && s;
+  });
+
+  // Sort
+  filtered.sort((a, b) => {
+    let av = a[sortKey] || '', bv = b[sortKey] || '';
+    if (typeof av === 'string') av = av.toLowerCase();
+    if (typeof bv === 'string') bv = bv.toLowerCase();
+    return av < bv ? -sortDir : av > bv ? sortDir : 0;
+  });
+
+  const total = filtered.length;
+  const pages = Math.ceil(total / perPage);
+  currentPage = Math.min(currentPage, Math.max(1, pages));
+  const slice = filtered.slice((currentPage-1)*perPage, currentPage*perPage);
+
+  document.getElementById('bookingsCount').textContent = `${total} booking${total !== 1 ? 's' : ''}`;
+
+  const tb = document.getElementById('bookingsTbody');
+  if (!slice.length) {
+    tb.innerHTML = '<tr><td colspan="10"><div class="empty-state"><p>No bookings found</p></div></td></tr>';
+  } else {
+    tb.innerHTML = slice.map(b => `
+      <tr onclick="openModal('${b.booking_id}')">
+        <td><code style="font-size:.75rem;font-family:monospace;color:var(--moss)">${b.booking_id}</code></td>
+        <td>${b.park_name || '—'}</td>
+        <td>
+          <div style="font-weight:600;font-size:.82rem">${b.full_name || '—'}</div>
+          <div style="font-size:.72rem;color:rgba(14,26,20,.45)">${b.nationality || ''}</div>
+        </td>
+        <td class="muted">
+          <div>${b.email || '—'}</div>
+          <div>${b.phone_number || ''}</div>
+        </td>
+        <td class="muted">${fmtDate(b.visit_date)}</td>
+        <td><strong>$${fmtNum(b.total_amount_usd || 0)}</strong></td>
+        <td class="muted">${Array.isArray(b.passengers) ? b.passengers.length : '—'}</td>
+        <td>${statusBadge(b.status)}</td>
+        <td>${payBadge(b.payment_status)}</td>
+        <td onclick="event.stopPropagation()">
+          <button onclick="openModal('${b.booking_id}')" style="padding:.3rem .7rem;border:var(--hairline);border-radius:5px;cursor:pointer;font-size:.72rem;background:#fff;color:var(--moss);font-family:var(--sans);font-weight:600;">View</button>
+          ${b.status !== 'cancelled' ? `<button onclick="cancelBooking('${b.booking_id}')" style="padding:.3rem .7rem;border:1px solid rgba(192,57,43,.2);border-radius:5px;cursor:pointer;font-size:.72rem;background:var(--red-faint);color:var(--red);font-family:var(--sans);font-weight:600;margin-left:.3rem">Cancel</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+  renderPagination(pages);
+}
+
+function filterBookingsTable() { currentPage = 1; renderBookingsTable(allBookings); }
+
+function sortTable(key) {
+  if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = 1; }
+  document.querySelectorAll('thead th').forEach(th => th.classList.remove('sorted'));
+  renderBookingsTable(allBookings);
+}
+
+function renderPagination(pages) {
+  const el = document.getElementById('pagination');
+  if (pages <= 1) { el.innerHTML = ''; return; }
+  let html = `<button class="pg-btn" ${currentPage===1?'disabled':''} onclick="goPage(${currentPage-1})">‹</button>`;
+  for (let i = 1; i <= Math.min(pages, 7); i++) {
+    html += `<button class="pg-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  if (pages > 7) html += `<span style="align-self:center;font-size:.75rem;color:rgba(14,26,20,.4)">…${pages}</span>`;
+  html += `<button class="pg-btn" ${currentPage===pages?'disabled':''} onclick="goPage(${currentPage+1})">›</button>`;
+  el.innerHTML = html;
+}
+function goPage(p) { currentPage = p; renderBookingsTable(allBookings); }
+
+// ═══════════════════════════════════════════════════
+// CONFIRMED TABLE
+// ═══════════════════════════════════════════════════
+function renderConfirmedTable(bookings) {
+  const search = (document.getElementById('confirmedSearch')?.value || '').toLowerCase();
+  const filtered = search ? bookings.filter(b => [b.booking_id, b.park_name, b.full_name].filter(Boolean).join(' ').toLowerCase().includes(search)) : bookings;
+  const tb = document.getElementById('confirmedTbody');
+  if (!filtered.length) { tb.innerHTML = '<tr><td colspan="8"><div class="empty-state"><p>No confirmed bookings</p></div></td></tr>'; return; }
+  tb.innerHTML = filtered.map(b => `
+    <tr onclick="openModal('${b.booking_id}')">
+      <td><code style="font-size:.75rem;font-family:monospace;color:var(--moss)">${b.booking_id}</code></td>
+      <td>${b.park_name || '—'}</td>
+      <td>${b.full_name || '—'}</td>
+      <td class="muted">${fmtDate(b.visit_date)}</td>
+      <td><strong>$${fmtNum(b.total_amount_usd || 0)}</strong></td>
+      <td>${payBadge(b.payment_status)}</td>
+      <td class="muted">${fmtDate(b.createdAt)}</td>
+      <td onclick="event.stopPropagation()">
+        <button onclick="openModal('${b.booking_id}')" style="padding:.3rem .7rem;border:var(--hairline);border-radius:5px;cursor:pointer;font-size:.72rem;background:#fff;color:var(--moss);font-family:var(--sans);font-weight:600">View</button>
+        <button onclick="cancelBooking('${b.booking_id}')" style="padding:.3rem .7rem;border:1px solid rgba(192,57,43,.2);border-radius:5px;cursor:pointer;font-size:.72rem;background:var(--red-faint);color:var(--red);font-family:var(--sans);font-weight:600;margin-left:.3rem">Cancel</button>
+      </td>
+    </tr>
+  `).join('');
+}
+function filterConfirmedTable() { renderConfirmedTable(allBookings.filter(b => b.status === 'confirmed')); }
+
+// ═══════════════════════════════════════════════════
+// CANCELLED TABLE
+// ═══════════════════════════════════════════════════
+function renderCancelledTable(bookings) {
+  const search = (document.getElementById('cancelledSearch')?.value || '').toLowerCase();
+  const filtered = search ? bookings.filter(b => [b.booking_id, b.park_name, b.full_name].filter(Boolean).join(' ').toLowerCase().includes(search)) : bookings;
+  const tb = document.getElementById('cancelledTbody');
+  if (!filtered.length) { tb.innerHTML = '<tr><td colspan="7"><div class="empty-state"><p>No cancelled bookings</p></div></td></tr>'; return; }
+  tb.innerHTML = filtered.map(b => `
+    <tr>
+      <td><code style="font-size:.75rem;font-family:monospace;color:var(--red)">${b.booking_id}</code></td>
+      <td>${b.park_name || '—'}</td>
+      <td>${b.full_name || '—'}</td>
+      <td class="muted">${fmtDate(b.visit_date)}</td>
+      <td>$${fmtNum(b.total_amount_usd || 0)}</td>
+      <td class="muted" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.cancellation_reason || '—'}</td>
+      <td class="muted">${b.cancelled_at ? fmtDate(b.cancelled_at) : '—'}</td>
+    </tr>
+  `).join('');
+}
+function filterCancelledTable() { renderCancelledTable(allBookings.filter(b => b.status === 'cancelled')); }
+
+// ═══════════════════════════════════════════════════
+// REVENUE PAGE
+// ═══════════════════════════════════════════════════
+function renderRevenueStats(d) {
+  if (!d) return;
+  const o = d.overview || {};
+  const avgRev = o.paid > 0 ? (o.total_revenue_usd / o.paid).toFixed(2) : 0;
+  document.getElementById('revenueStats').innerHTML = `
+    <div class="stat-card gold">
+      <div class="stat-card-icon">💵</div>
+      <div class="stat-card-value">$${fmtNum(o.total_revenue_usd || 0)}</div>
+      <div class="stat-card-label">Total Revenue</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-card-icon">💳</div>
+      <div class="stat-card-value">${o.paid || 0}</div>
+      <div class="stat-card-label">Paid Bookings</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-card-icon">📈</div>
+      <div class="stat-card-value">$${fmtNum(avgRev)}</div>
+      <div class="stat-card-label">Avg Revenue / Booking</div>
+    </div>
+  `;
+}
+
+function renderRevenueParkTable(parks) {
+  const tb = document.getElementById('revenueParkTbody');
+  if (!parks.length) { tb.innerHTML = '<tr><td colspan="4" class="muted" style="padding:2rem;text-align:center">No data</td></tr>'; return; }
+  tb.innerHTML = parks.sort((a,b) => b.revenue - a.revenue).map(p => `
+    <tr>
+      <td><strong>${p.name}</strong></td>
+      <td>${p.count}</td>
+      <td><strong style="color:var(--moss)">$${fmtNum(p.revenue || 0)}</strong></td>
+      <td class="muted">$${p.count ? fmtNum((p.revenue/p.count).toFixed(2)) : '0'}</td>
+    </tr>
+  `).join('');
+}
+
+function renderRevenueChart(daily) {
+  const wrap = document.getElementById('revenueChartWrap');
+  const last14 = daily.slice(-14);
+  if (!last14.length) { wrap.innerHTML = '<div class="empty-state"><p>No data</p></div>'; return; }
+  const maxR = Math.max(...last14.map(d => d.revenue || 0), 1);
+  const W = 700, H = 160, pad = 40, barW = (W - pad*2) / last14.length - 5;
+  const bars = last14.map((d, i) => {
+    const bh = Math.max(4, ((d.revenue||0) / maxR) * (H - 30));
+    const x = pad + i * ((W - pad*2) / last14.length) + 2;
+    const y = H - 20 - bh;
+    const label = d.date ? d.date.slice(5) : '';
+    return `
+      <rect x="${x}" y="${y}" width="${barW}" height="${bh}" fill="url(#revGrad)" rx="3"/>
+      ${i % 2 === 0 ? `<text x="${x + barW/2}" y="${H-4}" text-anchor="middle" font-size="9" fill="rgba(14,26,20,.4)">${label}</text>` : ''}
+      ${d.revenue > 0 ? `<text x="${x + barW/2}" y="${y-4}" text-anchor="middle" font-size="8" fill="rgba(14,26,20,.5)">$${Math.round(d.revenue)}</text>` : ''}
+    `;
+  }).join('');
+
+  wrap.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:100%">
+      <defs>
+        <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#c89b3c"/>
+          <stop offset="100%" stop-color="#e6a85a" stop-opacity=".5"/>
+        </linearGradient>
+      </defs>
+      ${bars}
+    </svg>
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════
+async function openModal(bookingId) {
+  currentModalBookingId = bookingId;
+  document.getElementById('bookingModal').classList.add('open');
+  document.getElementById('modalContent').innerHTML = '<div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>';
+
+  try {
+    const data = await apiFetch('/api/v1/bookings/' + bookingId);
+    const b = data.booking;
+    const cancelBtn = document.getElementById('modalCancelBtn');
+    cancelBtn.style.display = b.status === 'cancelled' ? 'none' : 'inline-flex';
+
+    const passengers = Array.isArray(b.passengers) ? b.passengers : [];
+    const vehicles = Array.isArray(b.vehicles) ? b.vehicles : [];
+    const activities = Array.isArray(b.activities) ? b.activities : [];
+
+    document.getElementById('modalContent').innerHTML = `
+      <div class="detail-item" style="grid-column:1/-1">
+        <label>Booking ID</label>
+        <p style="font-family:monospace;font-size:1.1rem;color:var(--moss)">${b.booking_id}</p>
+      </div>
+      <div class="detail-item">
+        <label>Status</label>
+        <p>${statusBadge(b.status)}</p>
+      </div>
+      <div class="detail-item">
+        <label>Payment Status</label>
+        <p>${payBadge(b.payment_status)}</p>
+      </div>
+
+      <div class="detail-divider"></div>
+      <div class="detail-section-title">Park & Visit</div>
+      <div class="detail-item">
+        <label>Park</label>
+        <p>${b.park_name || '—'}</p>
+      </div>
+      <div class="detail-item">
+        <label>Visit Date</label>
+        <p>${fmtDate(b.visit_date)}</p>
+      </div>
+      <div class="detail-item">
+        <label>Entry Time</label>
+        <p>${b.entry_time || '—'}</p>
+      </div>
+      <div class="detail-item">
+        <label>Total Amount</label>
+        <p style="font-family:var(--serif);font-size:1.3rem;color:var(--moss)"><strong>$${fmtNum(b.total_amount_usd || 0)}</strong></p>
+      </div>
+
+      <div class="detail-divider"></div>
+      <div class="detail-section-title">Booking Holder</div>
+      <div class="detail-item">
+        <label>Full Name</label>
+        <p>${b.full_name || '—'}</p>
+      </div>
+      <div class="detail-item">
+        <label>Nationality</label>
+        <p>${b.nationality || '—'}</p>
+      </div>
+      <div class="detail-item">
+        <label>Email</label>
+        <p>${b.email || '—'}</p>
+      </div>
+      <div class="detail-item">
+        <label>Phone</label>
+        <p>${b.phone_number || '—'}</p>
+      </div>
+      <div class="detail-item">
+        <label>ID Type</label>
+        <p>${b.id_type || '—'}</p>
+      </div>
+      <div class="detail-item">
+        <label>ID Number</label>
+        <p>${b.citizen_id || '—'}</p>
+      </div>
+
+      ${passengers.length ? `
+      <div class="detail-divider"></div>
+      <div class="detail-section-title">Passengers (${passengers.length})</div>
+      <div class="passenger-list">
+        ${passengers.map((p, i) => `
+          <div class="passenger-pill">
+            <strong>#${i+1} ${p.full_name || '—'}</strong>
+            <span>${p.visitor_type || ''} ${p.nationality ? '· ' + p.nationality : ''} ${p.age ? '· Age ' + p.age : ''}</span>
+          </div>
+        `).join('')}
+      </div>` : ''}
+
+      ${vehicles.length ? `
+      <div class="detail-divider"></div>
+      <div class="detail-section-title">Vehicles (${vehicles.length})</div>
+      <div class="passenger-list">
+        ${vehicles.map(v => `
+          <div class="passenger-pill">
+            <strong>${v.vehicle_type || '—'}</strong>
+            <span>${v.plate_number || ''} ${v.fee_usd ? '· $' + v.fee_usd : ''}</span>
+          </div>
+        `).join('')}
+      </div>` : ''}
+
+      ${activities.length ? `
+      <div class="detail-divider"></div>
+      <div class="detail-section-title">Activities (${activities.length})</div>
+      <div class="passenger-list">
+        ${activities.map(a => `
+          <div class="passenger-pill">
+            <strong>${a.activity_name || '—'}</strong>
+            <span>Qty: ${a.quantity || 1} · $${fmtNum(a.subtotal_usd || a.price_usd || 0)}</span>
+          </div>
+        `).join('')}
+      </div>` : ''}
+
+      ${b.payment_id ? `
+      <div class="detail-divider"></div>
+      <div class="detail-item">
+        <label>Payment ID</label>
+        <p style="font-family:monospace;font-size:.82rem">${b.payment_id}</p>
+      </div>` : ''}
+
+      ${b.status === 'cancelled' ? `
+      <div class="detail-divider"></div>
+      <div class="detail-item">
+        <label>Cancellation Reason</label>
+        <p>${b.cancellation_reason || '—'}</p>
+      </div>
+      <div class="detail-item">
+        <label>Cancelled At</label>
+        <p>${b.cancelled_at ? fmtDate(b.cancelled_at) : '—'}</p>
+      </div>` : ''}
+
+      <div class="detail-divider"></div>
+      <div class="detail-item">
+        <label>Booking Reference</label>
+        <p style="font-family:monospace">${b.booking_reference || '—'}</p>
+      </div>
+      <div class="detail-item">
+        <label>Created At</label>
+        <p class="muted">${b.createdAt ? new Date(b.createdAt).toLocaleString() : '—'}</p>
+      </div>
+    `;
+  } catch(e) {
+    document.getElementById('modalContent').innerHTML = `<div class="empty-state" style="grid-column:1/-1"><p>Error loading booking: ${e.message}</p></div>`;
+  }
+}
+
+function closeModal() {
+  document.getElementById('bookingModal').classList.remove('open');
+  currentModalBookingId = null;
+}
+
+async function cancelBookingFromModal() {
+  if (!currentModalBookingId) return;
+  await cancelBooking(currentModalBookingId);
+  closeModal();
+}
+
+async function cancelBooking(bookingId) {
+  if (!confirm(`Cancel booking ${bookingId}? This cannot be undone.`)) return;
+  try {
+    await apiDelete('/api/v1/bookings/' + bookingId, { cancellation_reason: 'Admin action' });
+    showToast('Booking cancelled successfully', 'success');
+    await refreshAll();
+  } catch(e) {
+    showToast('Error cancelling: ' + e.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// EXPORT CSV
+// ═══════════════════════════════════════════════════
+function exportCSV(statusFilter = null) {
+  let data = allBookings;
+  if (statusFilter) data = data.filter(b => b.status === statusFilter);
+  const cols = ['booking_id','booking_reference','park_name','full_name','email','phone_number','nationality','visit_date','entry_time','total_amount_usd','status','payment_status','payment_id','createdAt'];
+  const header = cols.join(',');
+  const rows = data.map(b => cols.map(k => `"${(b[k]||'').toString().replace(/"/g,'""')}"`).join(','));
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `uws-bookings-${statusFilter||'all'}-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('CSV exported successfully', 'success');
+}
+
+// ═══════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
+function fmtNum(n) {
+  const num = parseFloat(n);
+  if (isNaN(num)) return '0';
+  return num.toLocaleString('en-US', { maximumFractionDigits: 2 });
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  try { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  catch { return d; }
+}
+function statusBadge(s) {
+  const map = {
+    confirmed: 'badge-confirmed', cancelled: 'badge-cancelled', pending: 'badge-pending'
+  };
+  return `<span class="badge ${map[s] || 'badge-pending'}">${s || 'unknown'}</span>`;
+}
+function payBadge(s) {
+  const map = { paid: 'badge-paid', pending: 'badge-pending', failed: 'badge-cancelled', refunded: 'badge-pending' };
+  return `<span class="badge ${map[s] || 'badge-pending'}">${s || 'pending'}</span>`;
+}
+
+// Close modal on overlay click
+document.getElementById('bookingModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
